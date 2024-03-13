@@ -1,13 +1,14 @@
 import sys
 from enum import Enum
-from typing import List, Self
+from typing import List
+
 import mysql.connector
 
 conn = mysql.connector.connect(
 	host="localhost",
-	user="your_username",
-	password="your_password",
-	database="your_database"
+	user="root",
+	password="admin",
+	database="cuveio"
 )
 
 cursor = conn.cursor()
@@ -65,10 +66,10 @@ def init(fullReload: bool):
 		doCommand("DROP TABLE IF EXISTS users")
 		doCommand("DROP TABLE IF EXISTS plant_managment")
 		doCommand(
-			"CREATE TABLE IF NOT EXISTS fields (id INTEGER PRIMARY KEY, current_plant INTEGER, saved_prog INTEGER, saved_number INTEGER, linked_pump INTEGER)")
+			"CREATE TABLE IF NOT EXISTS fields (id INTEGER PRIMARY KEY AUTO_INCREMENT, current_plant INTEGER, saved_prog INTEGER, saved_number INTEGER, linked_pump INTEGER)")
 		doCommand(
-			"CREATE TABLE IF NOT EXISTS plants (id INTEGER PRIMARY KEY, name TEXT, min_time_aim INTEGER, max_time_aim INTEGER, min_humidity INTEGER, max_humidity INTEGER)")
-		doCommand("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT, pass TEXT)")
+			"CREATE TABLE IF NOT EXISTS plants (id INTEGER PRIMARY KEY AUTO_INCREMENT, name TEXT, min_time_aim INTEGER, max_time_aim INTEGER, min_humidity INTEGER, max_humidity INTEGER)")
+		doCommand("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTO_INCREMENT, username TEXT, pass TEXT)")
 		doCommand(
 			"CREATE TABLE IF NOT EXISTS plant_managment (user_id INTEGER, plant_id INTEGER, success_setup INTEGER, failed_setup INTEGER)")
 		# Create 3 users with names "Romain", "Irilind" and "Kylian"
@@ -89,7 +90,7 @@ def init(fullReload: bool):
 		# Create a plant managment for each pair of user / plant
 		for i in range(3):
 			for j in range(5):
-				doCommand("INSERT INTO plant_managment(user_id, plant_id, success_setup, failed_setup) VALUES ({i}, {j}, 0, 0)")
+				doCommand(f"INSERT INTO plant_managment(user_id, plant_id, success_setup, failed_setup) VALUES ({i}, {j if j is not None else 'null'}, 0, 0)")
 		conn.commit()
 
 
@@ -109,14 +110,14 @@ class Plant:
 		self.max_humidity: int = max_humidity
 
 	@classmethod
-	def findById(cls, plant_id: int) -> Self:
-		values = doCommand(f"SELECT * FROM plants WHERE id = {plant_id}")
-		return cls(plant_id, values[0], values[1], values[2], values[3], values[4])
+	def findById(cls, plant_id: int) -> 'Plant':
+		values = doCommand(f"SELECT * FROM plants WHERE id = {plant_id if plant_id is not None else 'null'}")
+		return cls(*values[0]) if len(values) > 0 else None
 
 	@classmethod
 	def getAllPlants(cls):
 		values = doCommand("SELECT * FROM plants")
-		return [cls(v[0], v[1], v[2], v[3], v[4], v[5]) for v in values]
+		return [cls(*v) for v in values]
 
 
 class Field:
@@ -128,17 +129,17 @@ class Field:
 		self.linked_pump: int = linked_pump
 
 	@classmethod
-	def findById(cls, field_id: int) -> Self:
-		values = doCommand(f"SELECT * FROM fields WHERE id = {field_id}")
-		return cls(field_id, values[0], values[1], values[2], values[3])
+	def findById(cls, field_id: int) -> 'Field':
+		values = doCommand(f"SELECT * FROM fields WHERE id = {field_id if field_id is not None else 'null'}")
+		return cls(*values[0]) if len(values) > 0 else None
 
 	@classmethod
-	def getAllFields(cls) -> List[Self]:
+	def getAllFields(cls) -> List['Field']:
 		values = doCommand("SELECT * FROM fields")
-		return [cls(v[0], v[1], v[2], v[3], v[4]) for v in values]
+		return [cls(*v) for v in values]
 
 	def save(self):
-		doCommand(f"UPDATE fields SET current_plant = {self.current_plant.id}, saved_prog = {self.saved_prog.value}, saved_number = {self.saved_number}, linked_pump = {self.linked_pump} WHERE id = {self.id}")
+		doCommand(f"UPDATE fields SET current_plant = {self.current_plant.id}, saved_prog = {self.saved_prog.value}, saved_number = {self.saved_number}, linked_pump = {self.linked_pump} WHERE id = {self.id if id is not None else 'null'}")
 
 
 class User:
@@ -148,9 +149,9 @@ class User:
 		self.password: str = password
 
 	@classmethod
-	def findById(cls, user_id: int) -> Self:
-		values = doCommand(f"SELECT * FROM users WHERE id = {user_id}")
-		return cls(user_id, values[0], values[1])
+	def findById(cls, user_id: int) -> 'User':
+		values = doCommand(f"SELECT * FROM users WHERE id = {user_id if user_id is not None else 'null'}")
+		return cls(*values[0]) if len(values) > 0 else None
 
 
 class PlantManagment:
@@ -161,14 +162,14 @@ class PlantManagment:
 		self.failed_setup: int = failed_setup
 
 	@classmethod
-	def findByUserAndPlant(cls, user_id: int, plant_id: int) -> Self:
-		values = doCommand(f"SELECT * FROM plant_managment WHERE user_id = {user_id} AND plant_id = {plant_id}")
-		return cls(user_id, plant_id, values[0], values[1])
+	def findByUserAndPlant(cls, user_id: int, plant_id: int) -> 'PlantManagment':
+		values = doCommand(f"SELECT * FROM plant_managment WHERE user_id = {user_id} AND plant_id = {plant_id if plant_id is not None else 'null'}")
+		return cls(*values[0]) if len(values) > 0 else None
 
 	@classmethod
-	def findPlantsOfUser(cls, user_id: int) -> List[Self]:
-		values = doCommand(f"SELECT * FROM plant_managment WHERE user_id = {user_id}")
-		return [cls(user_id, v[0], v[1], v[2]) for v in values]
+	def findPlantsOfUser(cls, user_id: int) -> List['PlantManagment']:
+		values = doCommand(f"SELECT * FROM plant_managment WHERE user_id = {user_id if user_id is not None else 'null'}")
+		return [cls(*v) for v in values]
 
 	def getSetupRatio(self) -> float:
 		return 0 if self.getSetupTimes() == 0 else self.success_setup / self.getSetupTimes()
@@ -177,7 +178,7 @@ class PlantManagment:
 		return self.success_setup + self.failed_setup
 
 	def save(self):
-		doCommand(f"UPDATE plant_managment SET success_setup = {self.success_setup}, failed_setup = {self.failed_setup} WHERE user_id = {self.user.id} AND plant_id = {self.plant.id}")
+		doCommand(f"UPDATE plant_managment SET success_setup = {self.success_setup}, failed_setup = {self.failed_setup} WHERE user_id = {self.user.id} AND plant_id = {self.plant.id if id is not None else 'null'}")
 
 
 init("reload" in sys.argv)

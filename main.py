@@ -1,33 +1,35 @@
-import os, sys
+import os
+import sys
 from time import sleep
 
 import database
+from IoT_Cuve_controller_rpi.GPIO.core import Core
 
 
-class Core:
+class DummyCore:
 	class Button:
 		def isPressed(self) -> bool:
-			...
+			return input("Button pressed ?") != "n"
 
 		def isChanged(self) -> bool:
 			...
 
 	class LCD:
 		def setText(self, text: str):
-			...
+			print("SET TEXT : " + text)
 
 		def setText_noRefresh(self, text: str):
 			...
 
 		def setText_defil(self, text: str):
-			...
+			print("SET TEXT DEFIL : " + text)
 
 		def setMenuText(self, setup: int):
-			...
+			print("SET MENU TEXT : " + str(setup))
 
 	class RGBLCD(LCD):
 		def setRGB(self, r: int, g: int, b: int):
-			...
+			print(f"SET RGB : {r}, {g}, {b}")
 
 	class Relais:
 		def on(self):
@@ -40,22 +42,29 @@ class Core:
 			...
 
 	lcd = RGBLCD()
-	relais = [Relais() for _ in range(4)]
-	buttons = [Button() for _ in range(4)]
+	relais = []
+	for i in range(4):
+		relais.append(Relais())
+	buttons = []
+	for i in range(4):
+		buttons.append(Button())
+
+
+core = Core()
 
 
 def show(text: str):
 	if len(text) > 16:
-		Core.lcd.setText_defil(text)
+		core._lcd.setText_defil(text)
 	else:
-		Core.lcd.setText(text)
+		core._lcd.setText(text)
 
 
 def awaitInput(availables: list[bool]) -> int:
-	Core.lcd.setMenuText(int("".join([str(1 - int(b)) for b in [availables[0], availables[3]]]), 2))
+	core._lcd.setMenuText(int("".join([str(1 - int(b)) for b in [availables[0], availables[3]]]), 2))
 	while True:
-		for i in availables:
-			if Core.buttons[i].isPressed() and availables[i]:
+		for i in range(len(availables)):
+			if core._buttons[i].isPressed() and availables[i]:
 				return i
 
 
@@ -75,7 +84,7 @@ def selector(values: list[str]) -> int:
 				return selected
 			case _:
 				return -1
-		Core.lcd.setText(values[selected])
+		core._lcd.setText(values[selected])
 
 
 def badTimeCoach(plant: database.Plant):
@@ -90,7 +99,7 @@ def goodTimeCoach(plant: database.Plant):
 
 def coachTime(pm: database.PlantManagment, timeChoice: int, coachRepeat: bool = False) -> bool:
 	# Color for coach's message : light yellow
-	Core.lcd.setRGB(255, 255, 224)
+	core._lcd.setRGB(255, 255, 224)
 	# Check if the time chosen is inbetween the plant's time range
 	if timeChoice < pm.plant.max_time_aim or timeChoice > pm.plant.max_time_aim:
 		# If not, show the user the plant's time range
@@ -134,10 +143,10 @@ def getConnectedProfile() -> tuple[int, str] or None:
 	# If the file is found, return the user's id and the stored password
 
 	# Color for USB key's connection : light blue
-	Core.lcd.setRGB(173, 216, 230)
+	core._lcd.setRGB(173, 216, 230)
 	show("Insérez la clé")
-	t = (-1, "")
-	while not Core.buttons[1].isPressed():
+	core._lcd.setMenuText(3)
+	while not core._buttons[1].isPressed():
 		# Check if a USB key is connected
 		if keyConnected():
 			# Check if the file "profile.cuveio" is present in the key
@@ -167,10 +176,11 @@ def getProfileId() -> int:
 
 def selectField() -> database.Field:
 	# Color for field's selection : brown
-	Core.lcd.setRGB(139, 69, 19)
+	core._lcd.setRGB(139, 69, 19)
 	fields = database.Field.getAllFields()
-	selected = selector([f"{f.id}:{f.current_plant.name.upper() if f.current_plant else 'EMPTY'};p:{f.linked_pump}" for f in
-						fields])
+	selected = selector(
+		[f"{f.id}:{f.current_plant.name.upper() if f.current_plant else 'EMPTY'};p:{f.linked_pump}" for f in
+		fields])
 	if selected in (-1, len(fields)):
 		return None
 	return fields[selected]
@@ -178,7 +188,7 @@ def selectField() -> database.Field:
 
 def selectPlant() -> database.Plant:
 	# Color for plant's selection : light green
-	Core.lcd.setRGB(144, 238, 144)
+	core._lcd.setRGB(144, 238, 144)
 	plants = database.Plant.getAllPlants()
 	selected = selector([f"{p.id}:{p.name.upper()}" for p in plants])
 	if selected in (-1, len(plants)):
@@ -188,7 +198,7 @@ def selectPlant() -> database.Plant:
 
 def selectTiming() -> int:
 	# Color for timing's selection : light blue
-	Core.lcd.setRGB(173, 216, 230)
+	core._lcd.setRGB(173, 216, 230)
 	timing = 0
 	show(f"Water freq: {timing}h")
 	availables = [True for _ in range(4)]
@@ -208,7 +218,7 @@ def selectTiming() -> int:
 
 def validateSetup() -> bool:
 	# Color for validation : yellow
-	Core.lcd.setRGB(255, 255, 0)
+	core._lcd.setRGB(255, 255, 0)
 	show("Validate ?")
 	return awaitInput([True, True, True, False])
 
@@ -233,7 +243,6 @@ def main():
 	plant: database.Plant = None
 	field: database.Field = None
 	timing = -1
-	pm: database.PlantManagment = None
 	force = False
 	while True:
 		match state:
@@ -277,6 +286,7 @@ def main():
 
 if __name__ == '__main__':
 	if len(sys.argv) > 1 and sys.argv[1] == "test":
-		show = lambda x: print("SHOW : " + x)
-		awaitInput = lambda: input("INPUT : ")
+		keyConnected = lambda: True
+		getFile = lambda: ("1", "0683207903f1832a87e488645fe0761354701afd028a2d7fadb8131bb8f96a67")
+		core = DummyCore
 	main()
