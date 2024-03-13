@@ -1,4 +1,6 @@
-import sys
+import os, sys
+from time import sleep
+
 import database
 
 
@@ -106,9 +108,61 @@ def coachTime(pm: database.PlantManagment, timeChoice: int, coachRepeat: bool = 
 	return True
 
 
+def keyConnected() -> bool:
+	os.system("mount /dev/sda1 /mnt")
+	res = os.path.exists("/mnt/profile.cuveio")
+	os.system("umount /mnt")
+	return res
+
+
+def getFile():
+	os.system("mount /dev/sda1 /mnt")
+	if not os.path.exists("/mnt/profile.cuveio"):
+		os.system("umount /mnt")
+		return None
+	with open("/mnt/profile.cuveio", "r") as f:
+		res = f.read().split("\n")
+	os.system("umount /mnt")
+	return res
+
+
+def getConnectedProfile() -> tuple[int, str] or None:
+	# Await for the user to connect a USB key
+	# If the user presses x, return None
+	# When the user connects the USB key, lookup the file "profile.cuveio" stored somewhere in the key
+	# If the file is not found, return None
+	# If the file is found, return the user's id and the stored password
+
+	# Color for USB key's connection : light blue
+	Core.lcd.setRGB(173, 216, 230)
+	show("Insérez la clé")
+	t = (-1, "")
+	while not Core.buttons[1].isPressed():
+		# Check if a USB key is connected
+		if keyConnected():
+			# Check if the file "profile.cuveio" is present in the key
+			f = getFile()
+			if f is not None:
+				# Return the user's id and the stored password
+				return [int(f[0]), f[1]]
+			else:
+				# Show a message to the user
+				show("Profil absent")
+				return None
+	show("Annulé")
+	return None
+
+
 def getProfileId() -> int:
-	# TODO : code to get the user's profile
-	return "1"
+	file = getConnectedProfile()
+	if file is None:
+		return -1
+	profile = database.User.findById(file[0])
+	storedPassword = file[1]
+	if storedPassword != profile.password:
+		show("La clé du compte est invalide")
+		return -1
+	return profile.id
 
 
 def selectField() -> database.Field:
@@ -170,7 +224,11 @@ def main():
 	7. Save the setup in the database
 	8. Repeat from step 2
 	"""
+
 	user = database.User.findById(getProfileId())
+	if user is None:
+		sleep(5)
+		return
 	state = 0
 	plant: database.Plant = None
 	field: database.Field = None

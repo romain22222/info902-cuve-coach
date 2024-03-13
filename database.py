@@ -40,6 +40,7 @@ Table plants {
 Table users {
 	id integer [primary key]
 	username text
+	pass text
 }
 
 Table plant_managment {
@@ -67,13 +68,13 @@ def init(fullReload: bool):
 			"CREATE TABLE IF NOT EXISTS fields (id INTEGER PRIMARY KEY, current_plant INTEGER, saved_prog INTEGER, saved_number INTEGER, linked_pump INTEGER)")
 		doCommand(
 			"CREATE TABLE IF NOT EXISTS plants (id INTEGER PRIMARY KEY, name TEXT, min_time_aim INTEGER, max_time_aim INTEGER, min_humidity INTEGER, max_humidity INTEGER)")
-		doCommand("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT)")
+		doCommand("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT, pass TEXT)")
 		doCommand(
 			"CREATE TABLE IF NOT EXISTS plant_managment (user_id INTEGER, plant_id INTEGER, success_setup INTEGER, failed_setup INTEGER)")
-		# Create 3 users with names "Alice", "Bob" and "Charlie"
-		doCommand("INSERT INTO users (username) VALUES ('Alice')")
-		doCommand("INSERT INTO users (username) VALUES ('Bob')")
-		doCommand("INSERT INTO users (username) VALUES ('Charlie')")
+		# Create 3 users with names "Romain", "Irilind" and "Kylian"
+		doCommand("INSERT INTO users (username, pass) VALUES ('Romain', '0683207903f1832a87e488645fe0761354701afd028a2d7fadb8131bb8f96a67')")
+		doCommand("INSERT INTO users (username, pass) VALUES ('Irilind', '7b4a90e5f9a0f7e3e3d3bae61e0f3d9b3e3d3bae61e0f3d9b87e488645fe3547')")
+		doCommand("INSERT INTO users (username, pass) VALUES ('Kylian', 'd3bae61e0f37545d9b87e488645fe3547b4a90e5f9a0f7e3e3d3bae61e0f3d9b')")
 		# Create 5 plants with names "Tomato", "Potato", "Cactus", "Rose" and "Sunflower"
 		doCommand("INSERT INTO plants (name, min_time_aim, max_time_aim, min_humidity, max_humidity) VALUES ('Tomato', 6, 8, 30, 40)")
 		doCommand("INSERT INTO plants (name, min_time_aim, max_time_aim, min_humidity, max_humidity) VALUES ('Potato', 8, 10, 25, 35)")
@@ -141,17 +142,15 @@ class Field:
 
 
 class User:
-	def __init__(self, user_id: int, username: str):
+	def __init__(self, user_id: int, username: str, password: str):
 		self.id: int = user_id
 		self.username: str = username
+		self.password: str = password
 
 	@classmethod
 	def findById(cls, user_id: int) -> Self:
 		values = doCommand(f"SELECT * FROM users WHERE id = {user_id}")
-		return cls(user_id, values[0])
-
-	def getPlants(self) -> List[Plant]:
-		return [v.plant for v in PlantManagment.findPlantsOfUser(self.id)]
+		return cls(user_id, values[0], values[1])
 
 
 class PlantManagment:
