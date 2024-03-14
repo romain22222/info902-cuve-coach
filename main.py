@@ -69,12 +69,11 @@ def coachTime(pm: database.PlantManagment, timeChoice: int, coachRepeat: bool = 
 
 def keyConnected() -> bool:
 	try:
-		ret = subprocess.check_output('sudo mount /dev/sda1 /mnt', shell=True)
+		subprocess.check_output('sudo mount /dev/sda1 /mnt', shell=True)
+		os.system("sudo umount /mnt")
+		return True
 	except subprocess.CalledProcessError:
 		return False
-	os.system('sudo umount /mnt')
-	print("RESULT :"+ret)
-	return "does not exist" not in ret
 
 
 def getFile():
