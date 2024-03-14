@@ -234,6 +234,8 @@ def main():
 	if user is None:
 		sleep(5)
 		return
+	show(f"Bonjour {user.username}")
+	sleep(2)
 	state = 0
 	plant: database.Plant = None
 	field: database.Field = None
