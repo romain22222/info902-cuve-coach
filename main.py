@@ -1,5 +1,6 @@
 import os
 import sys
+import subprocess
 from time import sleep
 
 import database
@@ -67,8 +68,8 @@ def coachTime(pm: database.PlantManagment, timeChoice: int, coachRepeat: bool = 
 
 
 def keyConnected() -> bool:
-	ret = os.popen('sudo mount /dev/sda1 /mnt').read()
-	os.popen('sudo umount /mnt')
+	ret = subprocess.check_output('sudo mount /dev/sda1 /mnt')
+	os.system('sudo umount /mnt')
 	print("RESULT :"+ret)
 	return "does not exist" not in ret
 
