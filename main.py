@@ -60,8 +60,8 @@ def show(text: str):
 		core._lcd.setText(text)
 
 
-def awaitInput(availables: list[bool]) -> int:
-	core._lcd.setMenuText(int("".join([str(1 - int(b)) for b in [availables[0], availables[3]]]), 2))
+def awaitInput(text: str, availables: list[bool]) -> int:
+	core._lcd.setMenuText(text, int("".join([str(1 - int(b)) for b in [availables[0], availables[3]]]), 2))
 	while True:
 		for i in range(len(availables)):
 			if core._buttons[i].isPressed() and availables[i]:
@@ -72,9 +72,8 @@ def selector(values: list[str]) -> int:
 	selected = 0
 	values = values + ["BACK"]
 	availables = [True for _ in range(4)]
-	show(values[0])
 	while True:
-		choice = awaitInput(availables)
+		choice = awaitInput(values[selected], availables)
 		match choice:
 			case 0:
 				selected = (selected - 1) % len(values)
@@ -84,37 +83,35 @@ def selector(values: list[str]) -> int:
 				return selected
 			case _:
 				return -1
-		core._lcd.setText(values[selected])
 
 
 def badTimeCoach(plant: database.Plant):
-	show(
-		f"Attention, la plante {plant.name} a besoin d'être arrosée entre toutes les {plant.min_time_aim} et {plant.max_time_aim} heures")
+	return "Attention, la plante {plant.name} a besoin d'être arrosée entre toutes les {plant.min_time_aim} et {plant.max_time_aim} heures"
 
 
 def goodTimeCoach(plant: database.Plant):
-	show(
-		f"Bravo, vous avez bien configuré la plante {plant.name} pour être arrosée entre toutes les {plant.max_time_aim} et {plant.max_time_aim} heures")
+	return f"Bravo, vous avez bien configuré la plante {plant.name} pour être arrosée entre toutes les {plant.max_time_aim} et {plant.max_time_aim} heures"
 
 
-def coachTime(pm: database.PlantManagment, timeChoice: int, coachRepeat: bool = False) -> bool:
+def coachTime(pm: database.PlantManagment, timeChoice: int, coachRepeat: bool = False) -> tuple[bool, str]:
 	# Color for coach's message : light yellow
 	core._lcd.setRGB(255, 255, 224)
+	text = ""
 	# Check if the time chosen is inbetween the plant's time range
 	if timeChoice < pm.plant.max_time_aim or timeChoice > pm.plant.max_time_aim:
 		# If not, show the user the plant's time range
-		badTimeCoach(pm.plant)
+		text = badTimeCoach(pm.plant)
 		if not coachRepeat:
 			pm.failed_setup += 1
-		return False
+		return False, text
 	if not coachRepeat:
 		pm.success_setup += 1
 	# Else, if the user has a sufficient amount of setups and the ratio of successful setups is high enough, do not show
 	# (we assume the user knows the plant's time range)
 	# Otherwise, congrats the user for setting up the plant and show the user the plant's time range
 	if not (pm.getSetupRatio() > 0.7 and pm.getSetupTimes() > 10) or coachRepeat:
-		goodTimeCoach(pm.plant)
-	return True
+		text = goodTimeCoach(pm.plant)
+	return True, text
 
 
 def keyConnected() -> bool:
@@ -144,8 +141,7 @@ def getConnectedProfile() -> tuple[int, str] or None:
 
 	# Color for USB key's connection : light blue
 	core._lcd.setRGB(173, 216, 230)
-	show("Insérez la clé")
-	core._lcd.setMenuText(3)
+	core._lcd.setMenuText("Insérez la clé", 3)
 	while not core._buttons[1].isPressed():
 		# Check if a USB key is connected
 		if keyConnected():
@@ -190,9 +186,11 @@ def selectPlant() -> database.Plant:
 	# Color for plant's selection : light green
 	core._lcd.setRGB(144, 238, 144)
 	plants = database.Plant.getAllPlants()
-	selected = selector([f"{p.id}:{p.name.upper()}" for p in plants])
-	if selected in (-1, len(plants)):
+	selected = selector([f"{p.id}:{p.name.upper()}" for p in plants] + ["EMPTY"])
+	if selected in (-1, len(plants) + 1):
 		return None
+	if selected == len(plants):
+		return database.Plant(-1, "EMPTY", 0, 0, 0, 0)
 	return plants[selected]
 
 
@@ -200,11 +198,10 @@ def selectTiming() -> int:
 	# Color for timing's selection : light blue
 	core._lcd.setRGB(173, 216, 230)
 	timing = 0
-	show(f"Water freq: {timing}h")
 	availables = [True for _ in range(4)]
 	while True:
 		availables[0] = timing > 0
-		match awaitInput(availables):
+		match awaitInput(f"Water freq: {timing}h", availables):
 			case 0:
 				timing -= 1
 			case 3:
@@ -213,14 +210,12 @@ def selectTiming() -> int:
 				return timing
 			case _:
 				return -1
-		show(f"Water freq: {timing}h")
 
 
 def validateSetup() -> bool:
 	# Color for validation : yellow
 	core._lcd.setRGB(255, 255, 0)
-	show("Validate ?")
-	return awaitInput([True, True, True, False])
+	return awaitInput("Validate ?", [True, True, True, False])
 
 
 def main():
@@ -256,6 +251,11 @@ def main():
 				if plant is None:
 					state = 0
 					continue
+				if plant.id == -1:
+					plant = None
+					timing = -1
+					state = 4
+					continue
 				state = 2
 			case 2:
 				timing = selectTiming()
@@ -264,14 +264,19 @@ def main():
 					continue
 			case 3:
 				pm = database.PlantManagment.findByUserAndPlant(user.id, plant.id)
-				state += 2 * coachTime(pm, timing, force) - 1
+				# state += 2 * coachTime(pm, timing, force) - 1
+				ret = coachTime(pm, timing, force)
+				state += 2 * int(ret[0]) - 1
 				pm.save()
 				force = False
-				awaitInput([True for _ in range(4)])
+				awaitInput(ret[1], [True for _ in range(4)])
 			case 4:
 				out = validateSetup()
 				match out:
 					case 0:
+						if plant is None:
+							state = 0
+							continue
 						force = True
 						state = 3
 					case 1:

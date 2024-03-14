@@ -139,7 +139,7 @@ class Field:
 		return [cls(*v) for v in values]
 
 	def save(self):
-		doCommand(f"UPDATE fields SET current_plant = {self.current_plant.id}, saved_prog = {self.saved_prog.value}, saved_number = {self.saved_number}, linked_pump = {self.linked_pump} WHERE id = {self.id if id is not None else 'null'}")
+		doCommand(f"UPDATE fields SET current_plant = {self.current_plant.id if self.current_plant is not None else 'null'}, saved_prog = {self.saved_prog.value}, saved_number = {self.saved_number}, linked_pump = {self.linked_pump} WHERE id = {self.id if id is not None else 'null'}")
 
 
 class User:
