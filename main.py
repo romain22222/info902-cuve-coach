@@ -45,7 +45,7 @@ def badTimeCoach(plant: database.Plant):
 
 
 def goodTimeCoach(plant: database.Plant):
-	return f"Bravo, vous avez bien configure la plante {plant.name} pour etre arrosee entre toutes les {plant.max_time_aim} et {plant.max_time_aim} heures"
+	return f"Bravo, vous avez bien configure la plante {plant.name} pour etre arrosee entre toutes les {plant.min_time_aim} et {plant.max_time_aim} heures"
 
 
 def coachTime(pm: database.PlantManagment, timeChoice: int, coachRepeat: bool = False) -> tuple[bool, str]:
