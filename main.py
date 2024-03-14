@@ -193,6 +193,7 @@ def main():
 	user = None
 	while True:
 		print(state)
+		sleep(0.5)
 		if state == -1:
 			user = database.User.findById(getProfileId())
 			if user is None:
