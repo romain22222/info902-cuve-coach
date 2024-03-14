@@ -1,4 +1,4 @@
 [submodule "IoT_Cuve_controller_rpi"]
 	path = IoT_Cuve_controller_rpi
 	url = https://github.com/NailykSturm/IoT_Cuve_controller_rpi
-	branch = feat/core
+	branch = main

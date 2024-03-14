@@ -83,10 +83,10 @@ def init(fullReload: bool):
 		doCommand("INSERT INTO plants (name, min_time_aim, max_time_aim, min_humidity, max_humidity) VALUES ('Rose', 8, 12, 40, 50)")
 		doCommand("INSERT INTO plants (name, min_time_aim, max_time_aim, min_humidity, max_humidity) VALUES ('Sunflower', 12, 16, 20, 30)")
 		# Create 4 empty fields
-		doCommand("INSERT INTO fields (current_plant, saved_prog, saved_number, linked_pump) VALUES (NULL, NULL, NULL, 0)")
 		doCommand("INSERT INTO fields (current_plant, saved_prog, saved_number, linked_pump) VALUES (NULL, NULL, NULL, 1)")
 		doCommand("INSERT INTO fields (current_plant, saved_prog, saved_number, linked_pump) VALUES (NULL, NULL, NULL, 2)")
 		doCommand("INSERT INTO fields (current_plant, saved_prog, saved_number, linked_pump) VALUES (NULL, NULL, NULL, 3)")
+		doCommand("INSERT INTO fields (current_plant, saved_prog, saved_number, linked_pump) VALUES (NULL, NULL, NULL, 4)")
 		# Create a plant managment for each pair of user / plant
 		for i in range(3):
 			for j in range(5):
@@ -140,6 +140,11 @@ class Field:
 
 	def save(self):
 		doCommand(f"UPDATE fields SET current_plant = {self.current_plant.id if self.current_plant is not None else 'null'}, saved_prog = {self.saved_prog.value}, saved_number = {self.saved_number}, linked_pump = {self.linked_pump} WHERE id = {self.id if id is not None else 'null'}")
+
+	@classmethod
+	def findByLinkedPump(cls, linked_pump: int) -> 'Field':
+		values = doCommand(f"SELECT * FROM fields WHERE linked_pump = {linked_pump if linked_pump is not None else 'null'}")
+		return cls(*values[0]) if len(values) > 0 else None
 
 
 class User:

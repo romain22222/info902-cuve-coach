@@ -6,62 +6,15 @@ import database
 from IoT_Cuve_controller_rpi.GPIO.core import Core
 
 
-class DummyCore:
-	class Button:
-		def isPressed(self) -> bool:
-			return input("Button pressed ?") != "n"
-
-		def isChanged(self) -> bool:
-			...
-
-	class LCD:
-		def setText(self, text: str):
-			print("SET TEXT : " + text)
-
-		def setText_noRefresh(self, text: str):
-			...
-
-		def setText_defil(self, text: str):
-			print("SET TEXT DEFIL : " + text)
-
-		def setMenuText(self, setup: int):
-			print("SET MENU TEXT : " + str(setup))
-
-	class RGBLCD(LCD):
-		def setRGB(self, r: int, g: int, b: int):
-			print(f"SET RGB : {r}, {g}, {b}")
-
-	class Relais:
-		def on(self):
-			...
-
-		def off(self):
-			...
-
-		def toggle(self):
-			...
-
-	lcd = RGBLCD()
-	relais = []
-	for i in range(4):
-		relais.append(Relais())
-	buttons = []
-	for i in range(4):
-		buttons.append(Button())
-
-
 core = Core()
 
 
 def show(text: str):
-	if len(text) > 16:
-		core._lcd.setText_defil(text)
-	else:
-		core._lcd.setText(text)
+	core.setText(text)
 
 
 def awaitInput(text: str, availables: list[bool]) -> int:
-	core._lcd.setMenuText(text, int("".join([str(1 - int(b)) for b in [availables[0], availables[3]]]), 2))
+	core.setMenuText(text, int("".join([str(1 - int(b)) for b in [availables[0], availables[3]]]), 2))
 	while True:
 		for i in range(len(availables)):
 			if core._buttons[i].isPressed() and availables[i]:
@@ -86,7 +39,7 @@ def selector(values: list[str]) -> int:
 
 
 def badTimeCoach(plant: database.Plant):
-	return "Attention, la plante {plant.name} a besoin d'être arrosée entre toutes les {plant.min_time_aim} et {plant.max_time_aim} heures"
+	return f"Attention, la plante {plant.name} a besoin d'être arrosée entre toutes les {plant.min_time_aim} et {plant.max_time_aim} heures"
 
 
 def goodTimeCoach(plant: database.Plant):
@@ -95,7 +48,7 @@ def goodTimeCoach(plant: database.Plant):
 
 def coachTime(pm: database.PlantManagment, timeChoice: int, coachRepeat: bool = False) -> tuple[bool, str]:
 	# Color for coach's message : light yellow
-	core._lcd.setRGB(255, 255, 224)
+	core.setColor(255, 255, 224)
 	text = ""
 	# Check if the time chosen is inbetween the plant's time range
 	if timeChoice < pm.plant.max_time_aim or timeChoice > pm.plant.max_time_aim:
@@ -140,9 +93,9 @@ def getConnectedProfile() -> tuple[int, str] or None:
 	# If the file is found, return the user's id and the stored password
 
 	# Color for USB key's connection : light blue
-	core._lcd.setRGB(173, 216, 230)
-	core._lcd.setMenuText("Insérez la clé", 3)
-	while not core._buttons[1].isPressed():
+	core.setColor(173, 216, 230)
+	core.setMenuText("Insérez la clé", 3)
+	while not core.getCancelButton().isPressed():
 		# Check if a USB key is connected
 		if keyConnected():
 			# Check if the file "profile.cuveio" is present in the key
@@ -172,11 +125,11 @@ def getProfileId() -> int:
 
 def selectField() -> database.Field:
 	# Color for field's selection : brown
-	core._lcd.setRGB(139, 69, 19)
+	core.setColor(139, 69, 19)
 	fields = database.Field.getAllFields()
 	selected = selector(
 		[f"{f.id}:{f.current_plant.name.upper() if f.current_plant else 'EMPTY'};p:{f.linked_pump}" for f in
-		fields])
+		 fields])
 	if selected in (-1, len(fields)):
 		return None
 	return fields[selected]
@@ -184,7 +137,7 @@ def selectField() -> database.Field:
 
 def selectPlant() -> database.Plant:
 	# Color for plant's selection : light green
-	core._lcd.setRGB(144, 238, 144)
+	core.setColor(144, 238, 144)
 	plants = database.Plant.getAllPlants()
 	selected = selector([f"{p.id}:{p.name.upper()}" for p in plants] + ["EMPTY"])
 	if selected in (-1, len(plants) + 1):
@@ -196,7 +149,7 @@ def selectPlant() -> database.Plant:
 
 def selectTiming() -> int:
 	# Color for timing's selection : light blue
-	core._lcd.setRGB(173, 216, 230)
+	core.setColor(173, 216, 230)
 	timing = 0
 	availables = [True for _ in range(4)]
 	while True:
@@ -214,7 +167,7 @@ def selectTiming() -> int:
 
 def validateSetup() -> bool:
 	# Color for validation : yellow
-	core._lcd.setRGB(255, 255, 0)
+	core.setColor(255, 255, 0)
 	return awaitInput("Validate ?", [True, True, True, False])
 
 
@@ -292,8 +245,13 @@ def main():
 
 
 if __name__ == '__main__':
-	if len(sys.argv) > 1 and sys.argv[1] == "test":
+	if "keyTest" in sys.argv:
+		print(keyConnected())
+		print(getFile())
+		exit(0)
+	if "test" in sys.argv:
 		keyConnected = lambda: True
 		getFile = lambda: ("1", "0683207903f1832a87e488645fe0761354701afd028a2d7fadb8131bb8f96a67")
-		core = DummyCore
 	main()
+	if "test" not in sys.argv:
+		Core.quit()
