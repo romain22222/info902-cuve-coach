@@ -23,7 +23,7 @@ def pumpControl(pumpNum):
 			sleep(5)
 			continue
 		if field.saved_prog == database.Program.HOUR:
-			sleep(field.saved_number * 60)
+			sleep(field.saved_number * 1)
 			waterPlant(pumpNum)
 		else:
 			# uninplemented humidity control
