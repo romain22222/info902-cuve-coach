@@ -38,11 +38,11 @@ def selector(values: list[str]) -> int:
 
 
 def badTimeCoach(plant: database.Plant):
-	return f"Attention, la plante {plant.name} a besoin d'être arrosée entre toutes les {plant.min_time_aim} et {plant.max_time_aim} heures"
+	return f"Attention, la plante {plant.name} a besoin d'etre arrosee entre toutes les {plant.min_time_aim} et {plant.max_time_aim} heures"
 
 
 def goodTimeCoach(plant: database.Plant):
-	return f"Bravo, vous avez bien configuré la plante {plant.name} pour être arrosée entre toutes les {plant.max_time_aim} et {plant.max_time_aim} heures"
+	return f"Bravo, vous avez bien configure la plante {plant.name} pour etre arrosee entre toutes les {plant.max_time_aim} et {plant.max_time_aim} heures"
 
 
 def coachTime(pm: database.PlantManagment, timeChoice: int, coachRepeat: bool = False) -> tuple[bool, str]:
@@ -93,7 +93,7 @@ def getConnectedProfile() -> tuple[int, str] or None:
 
 	# Color for USB key's connection : light blue
 	core.setColor(173, 216, 230)
-	core.setMenuText("Insérez la clé", 3)
+	core.setMenuText("Inserez la cle", 3)
 	while not core.getCancelButton().isPressed():
 		# Check if a USB key is connected
 		if keyConnected():
@@ -106,7 +106,7 @@ def getConnectedProfile() -> tuple[int, str] or None:
 				# Show a message to the user
 				show("Profil absent")
 				return None
-	show("Annulé")
+	show("Annule")
 	return None
 
 
@@ -117,7 +117,7 @@ def getProfileId() -> int:
 	profile = database.User.findById(file[0])
 	storedPassword = file[1]
 	if storedPassword != profile.password:
-		show("La clé du compte est invalide")
+		show("La cle du compte est invalide")
 		return -1
 	return profile.id
 
