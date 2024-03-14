@@ -232,7 +232,8 @@ def main():
 			state += 2 * int(ret[0]) - 1
 			pm.save()
 			force = False
-			awaitInput(ret[1], [True for _ in range(4)])
+			if ret[1]:
+				awaitInput(ret[1], [True for _ in range(4)])
 		elif state == 4:
 			out = validateSetup()
 			if out == 0:
