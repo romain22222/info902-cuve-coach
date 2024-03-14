@@ -68,7 +68,10 @@ def coachTime(pm: database.PlantManagment, timeChoice: int, coachRepeat: bool = 
 
 
 def keyConnected() -> bool:
-	ret = subprocess.check_output('sudo mount /dev/sda1 /mnt', shell=True)
+	try:
+		ret = subprocess.check_output('sudo mount /dev/sda1 /mnt', shell=True)
+	except subprocess.CalledProcessError as e:
+		ret = e.output
 	os.system('sudo umount /mnt')
 	print("RESULT :"+ret)
 	return "does not exist" not in ret
