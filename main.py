@@ -37,6 +37,7 @@ def selector(values: list[str]) -> int:
 			return selected
 		else:
 			return -1
+		sleep(0.2)
 
 
 def badTimeCoach(plant: database.Plant):
