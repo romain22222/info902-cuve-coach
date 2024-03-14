@@ -83,10 +83,10 @@ def init(fullReload: bool):
 		doCommand("INSERT INTO plants (name, min_time_aim, max_time_aim, min_humidity, max_humidity) VALUES ('Rose', 8, 12, 40, 50)")
 		doCommand("INSERT INTO plants (name, min_time_aim, max_time_aim, min_humidity, max_humidity) VALUES ('Sunflower', 12, 16, 20, 30)")
 		# Create 4 empty fields
+		doCommand("INSERT INTO fields (current_plant, saved_prog, saved_number, linked_pump) VALUES (NULL, NULL, NULL, 0)")
 		doCommand("INSERT INTO fields (current_plant, saved_prog, saved_number, linked_pump) VALUES (NULL, NULL, NULL, 1)")
 		doCommand("INSERT INTO fields (current_plant, saved_prog, saved_number, linked_pump) VALUES (NULL, NULL, NULL, 2)")
 		doCommand("INSERT INTO fields (current_plant, saved_prog, saved_number, linked_pump) VALUES (NULL, NULL, NULL, 3)")
-		doCommand("INSERT INTO fields (current_plant, saved_prog, saved_number, linked_pump) VALUES (NULL, NULL, NULL, 4)")
 
 		nbU = doCommand("SELECT COUNT(*) FROM users")[0][0]
 		nbP = doCommand("SELECT COUNT(*) FROM plants")[0][0]

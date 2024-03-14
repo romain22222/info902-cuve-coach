@@ -33,7 +33,7 @@ def pumpControl(pumpNum):
 def main():
 	for i in range(4):
 		# Create a thread for each pump
-		pump = threading.Thread(target=pumpControl, args=(i+1,))
+		pump = threading.Thread(target=pumpControl, args=(i,))
 		pump.start()
 
 
