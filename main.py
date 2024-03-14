@@ -71,7 +71,7 @@ def keyConnected() -> bool:
 	try:
 		ret = subprocess.check_output('sudo mount /dev/sda1 /mnt', shell=True)
 	except subprocess.CalledProcessError as e:
-		ret = e.output
+		ret = str(e.output)
 	os.system('sudo umount /mnt')
 	print("RESULT :"+ret)
 	return "does not exist" not in ret
