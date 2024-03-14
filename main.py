@@ -166,6 +166,7 @@ def selectTiming() -> int:
 			return timing
 		else:
 			return -1
+		sleep(0.2)
 
 
 def validateSetup() -> bool:
