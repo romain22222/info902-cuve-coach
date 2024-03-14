@@ -69,6 +69,7 @@ def coachTime(pm: database.PlantManagment, timeChoice: int, coachRepeat: bool = 
 def keyConnected() -> bool:
 	ret = os.popen('sudo mount /dev/sda1 /mnt').read()
 	os.popen('sudo umount /mnt')
+	print(ret)
 	return "does not exist" not in ret
 
 
@@ -249,4 +250,4 @@ if __name__ == '__main__':
 		getFile = lambda: ("1", "0683207903f1832a87e488645fe0761354701afd028a2d7fadb8131bb8f96a67")
 	main()
 	if "test" not in sys.argv:
-		Core.quit()
+		core.quit()
