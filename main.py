@@ -27,15 +27,14 @@ def selector(values: list[str]) -> int:
 	availables = [True for _ in range(4)]
 	while True:
 		choice = awaitInput(values[selected], availables)
-		match choice:
-			case 0:
-				selected = (selected - 1) % len(values)
-			case 3:
-				selected = (selected + 1) % len(values)
-			case 2:
-				return selected
-			case _:
-				return -1
+		if choice == 0:
+			selected = (selected - 1) % len(values)
+		elif choice == 3:
+			selected = (selected + 1) % len(values)
+		elif choice == 2:
+			return selected
+		else:
+			return -1
 
 
 def badTimeCoach(plant: database.Plant):
@@ -154,15 +153,15 @@ def selectTiming() -> int:
 	availables = [True for _ in range(4)]
 	while True:
 		availables[0] = timing > 0
-		match awaitInput(f"Water freq: {timing}h", availables):
-			case 0:
-				timing -= 1
-			case 3:
-				timing += 1
-			case 2:
-				return timing
-			case _:
-				return -1
+		ret = awaitInput(f"Water freq: {timing}h", availables)
+		if ret == 0:
+			timing -= 1
+		elif ret == 3:
+			timing += 1
+		elif ret == 2:
+			return timing
+		else:
+			return -1
 
 
 def validateSetup() -> bool:
@@ -195,53 +194,51 @@ def main():
 	timing = -1
 	force = False
 	while True:
-		match state:
-			case 0:
-				field = selectField()
-				if field is None:
-					break
+		if state == 0:
+			field = selectField()
+			if field is None:
+				break
+			state = 1
+		elif state == 1:
+			plant = selectPlant()
+			if plant is None:
+				state = 0
+				continue
+			if plant.id == -1:
+				plant = None
+				timing = -1
+				state = 4
+				continue
+			state = 2
+		elif state == 2:
+			timing = selectTiming()
+			if timing == -1:
 				state = 1
-			case 1:
-				plant = selectPlant()
+				continue
+			state = 3
+		elif state == 3:
+			pm = database.PlantManagment.findByUserAndPlant(user.id, plant.id)
+			ret = coachTime(pm, timing, force)
+			state += 2 * int(ret[0]) - 1
+			pm.save()
+			force = False
+			awaitInput(ret[1], [True for _ in range(4)])
+		elif state == 4:
+			out = validateSetup()
+			if out == 0:
 				if plant is None:
 					state = 0
 					continue
-				if plant.id == -1:
-					plant = None
-					timing = -1
-					state = 4
-					continue
+				force = True
+				state = 3
+			elif out == 1:
 				state = 2
-			case 2:
-				timing = selectTiming()
-				if timing == -1:
-					state = 1
-					continue
-			case 3:
-				pm = database.PlantManagment.findByUserAndPlant(user.id, plant.id)
-				# state += 2 * coachTime(pm, timing, force) - 1
-				ret = coachTime(pm, timing, force)
-				state += 2 * int(ret[0]) - 1
-				pm.save()
-				force = False
-				awaitInput(ret[1], [True for _ in range(4)])
-			case 4:
-				out = validateSetup()
-				match out:
-					case 0:
-						if plant is None:
-							state = 0
-							continue
-						force = True
-						state = 3
-					case 1:
-						state = 2
-					case 2:
-						field.current_plant = plant
-						field.saved_prog = database.Program.HOUR
-						field.saved_number = timing
-						field.save()
-						state = 0
+			elif out == 2:
+				field.current_plant = plant
+				field.saved_prog = database.Program.HOUR
+				field.saved_number = timing
+				field.save()
+				state = 0
 
 
 if __name__ == '__main__':
