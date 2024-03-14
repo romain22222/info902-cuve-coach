@@ -69,7 +69,7 @@ def coachTime(pm: database.PlantManagment, timeChoice: int, coachRepeat: bool = 
 def keyConnected() -> bool:
 	ret = os.popen('sudo mount /dev/sda1 /mnt').read()
 	os.popen('sudo umount /mnt')
-	print(ret)
+	print("RESULT :"+ret)
 	return "does not exist" not in ret
 
 
