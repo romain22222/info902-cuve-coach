@@ -149,7 +149,9 @@ class Field:
 
 	@classmethod
 	def findByLinkedPump(cls, linked_pump: int) -> 'Field':
+		print(f"SELECT * FROM fields WHERE linked_pump = {linked_pump if linked_pump is not None else 'null'}")
 		values = doCommand(f"SELECT * FROM fields WHERE linked_pump = {linked_pump if linked_pump is not None else 'null'}")
+		print(f"good for {linked_pump} : {values}")
 		return cls(*values[0]) if len(values) > 0 else None
 
 
