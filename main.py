@@ -59,7 +59,7 @@ def coachTime(pm: database.PlantManagment, timeChoice: int, coachRepeat: bool = 
 		# If the user has a sufficient amount of setups and the ratio of successful setups is high enough, do not show
 		# (we assume the user knows the plant's time range)
 		# Otherwise, congrats the user for setting up the plant and show the user the plant's time range
-		if not (pm.getSetupRatio() > 0.7 and pm.getSetupTimes() > 10) or coachRepeat:
+		if not (pm.getSetupRatio() > 0.7 and pm.getSetupTimes() > 5) or coachRepeat:
 			text = goodTimeCoach(pm.plant)
 		return True, text
 	# If not, show the user the plant's time range

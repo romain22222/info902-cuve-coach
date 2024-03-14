@@ -20,10 +20,10 @@ def pumpControl(pumpNum):
 		# If it does, check the saved program and saved number, and water the plant accordingly
 		field = database.Field.findByLinkedPump(pumpNum)
 		if field.current_plant is None:
-			sleep(300)
+			sleep(5)
 			continue
 		if field.saved_prog == database.Program.HOUR:
-			sleep(field.saved_number * 3600)
+			sleep(field.saved_number * 60)
 			waterPlant(pumpNum)
 		else:
 			# uninplemented humidity control
