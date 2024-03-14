@@ -20,6 +20,9 @@ def pumpControl(pumpNum):
 		# First check in the database if the linked field has anything planted, if not, sleep for 5 minutes
 		# If it does, check the saved program and saved number, and water the plant accordingly
 		field = database.Field.findByLinkedPump(pumpNum)
+		print(field.id)
+		print(field.current_plant)
+		print(field.current_plant.name if field.current_plant is not None else None)
 		if field.current_plant is None:
 			sleep(5)
 			continue
