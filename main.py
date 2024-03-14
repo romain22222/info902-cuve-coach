@@ -49,6 +49,7 @@ def goodTimeCoach(plant: database.Plant):
 
 
 def coachTime(pm: database.PlantManagment, timeChoice: int, coachRepeat: bool = False) -> tuple[bool, str]:
+	print(pm.plant.min_time_aim, pm.plant.max_time_aim, timeChoice)
 	# Color for coach's message : light yellow
 	core.setColor(255, 255, 224)
 	text = ""
