@@ -8,6 +8,7 @@ core = Core()
 
 
 def waterPlant(pumpNum):
+	print("watering with pump", pumpNum)
 	# Turn on the pump for 10 seconds
 	core._relays[pumpNum].toggle()
 	sleep(10)
