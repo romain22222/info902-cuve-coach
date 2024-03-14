@@ -67,20 +67,18 @@ def coachTime(pm: database.PlantManagment, timeChoice: int, coachRepeat: bool = 
 
 
 def keyConnected() -> bool:
-	os.system("mount /dev/sda1 /mnt")
-	res = os.path.exists("/mnt/profile.cuveio")
-	os.system("umount /mnt")
-	return res
+	ret = os.popen('sudo mount /dev/sda1 /mnt').read()
+	os.popen('sudo umount /mnt')
+	return "does not exist" not in ret
 
 
 def getFile():
-	os.system("mount /dev/sda1 /mnt")
-	if not os.path.exists("/mnt/profile.cuveio"):
-		os.system("umount /mnt")
-		return None
-	with open("/mnt/profile.cuveio", "r") as f:
-		res = f.read().split("\n")
-	os.system("umount /mnt")
+	os.system("sudo mount /dev/sda1 /mnt")
+	res = None
+	if os.path.exists("/mnt/profile.cuveio"):
+		with open("/mnt/profile.cuveio", "r") as f:
+			res = f.read().split("\n")
+	os.system("sudo umount /mnt")
 	return res
 
 
