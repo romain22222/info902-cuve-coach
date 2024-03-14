@@ -185,23 +185,26 @@ def main():
 	7. Save the setup in the database
 	8. Repeat from step 2
 	"""
-
-	user = database.User.findById(getProfileId())
-	if user is None:
-		sleep(5)
-		return
-	show(f"Bonjour {user.username}")
-	sleep(2)
-	state = 0
+	state = -1
 	plant: database.Plant = None
 	field: database.Field = None
 	timing = -1
 	force = False
+	user = None
 	while True:
-		if state == 0:
+		print(state)
+		if state == -1:
+			user = database.User.findById(getProfileId())
+			if user is None:
+				sleep(5)
+				continue
+			show(f"Bonjour {user.username}")
+			sleep(2)
+		elif state == 0:
 			field = selectField()
 			if field is None:
-				break
+				state = -1
+				continue
 			state = 1
 		elif state == 1:
 			plant = selectPlant()
