@@ -87,11 +87,16 @@ def init(fullReload: bool):
 		doCommand("INSERT INTO fields (current_plant, saved_prog, saved_number, linked_pump) VALUES (NULL, NULL, NULL, 2)")
 		doCommand("INSERT INTO fields (current_plant, saved_prog, saved_number, linked_pump) VALUES (NULL, NULL, NULL, 3)")
 		doCommand("INSERT INTO fields (current_plant, saved_prog, saved_number, linked_pump) VALUES (NULL, NULL, NULL, 4)")
+
+		nbU = doCommand("SELECT COUNT(*) FROM users")[0][0]
+		nbP = doCommand("SELECT COUNT(*) FROM plants")[0][0]
 		# Create a plant managment for each pair of user / plant
-		for i in range(3):
-			for j in range(5):
-				doCommand(f"INSERT INTO plant_managment(user_id, plant_id, success_setup, failed_setup) VALUES ({i}, {j if j is not None else 'null'}, 0, 0)")
+		for i in range(nbU):
+			for j in range(nbP):
+				doCommand(f"INSERT INTO plant_managment(user_id, plant_id, success_setup, failed_setup) VALUES ({i+1}, {j+1}, 0, 0)")
 		conn.commit()
+	else:
+		doCommand("USE cuveio")
 
 
 class Program(Enum):
