@@ -54,20 +54,20 @@ def coachTime(pm: database.PlantManagment, timeChoice: int, coachRepeat: bool = 
 	core.setColor(255, 255, 224)
 	text = ""
 	# Check if the time chosen is inbetween the plant's time range
-	if timeChoice < pm.plant.max_time_aim or timeChoice > pm.plant.max_time_aim:
-		# If not, show the user the plant's time range
-		text = badTimeCoach(pm.plant)
+	if pm.plant.min_time_aim <= timeChoice <= pm.plant.max_time_aim:
 		if not coachRepeat:
-			pm.failed_setup += 1
-		return False, text
+			pm.success_setup += 1
+		# If the user has a sufficient amount of setups and the ratio of successful setups is high enough, do not show
+		# (we assume the user knows the plant's time range)
+		# Otherwise, congrats the user for setting up the plant and show the user the plant's time range
+		if not (pm.getSetupRatio() > 0.7 and pm.getSetupTimes() > 10) or coachRepeat:
+			text = goodTimeCoach(pm.plant)
+		return True, text
+	# If not, show the user the plant's time range
+	text = badTimeCoach(pm.plant)
 	if not coachRepeat:
-		pm.success_setup += 1
-	# Else, if the user has a sufficient amount of setups and the ratio of successful setups is high enough, do not show
-	# (we assume the user knows the plant's time range)
-	# Otherwise, congrats the user for setting up the plant and show the user the plant's time range
-	if not (pm.getSetupRatio() > 0.7 and pm.getSetupTimes() > 10) or coachRepeat:
-		text = goodTimeCoach(pm.plant)
-	return True, text
+		pm.failed_setup += 1
+	return False, text
 
 
 def keyConnected() -> bool:
