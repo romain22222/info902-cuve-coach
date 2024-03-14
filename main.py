@@ -15,6 +15,7 @@ def show(text: str):
 
 
 def awaitInput(text: str, availables: list[bool]) -> int:
+	text = text + " " * (16 - len(text))
 	core.setMenuText(text, int("".join([str(1 - int(b)) for b in [availables[0], availables[3]]]), 2))
 	while True:
 		for i in range(len(availables)):
