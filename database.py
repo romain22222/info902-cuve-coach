@@ -8,7 +8,7 @@ conn = mysql.connector.connect(
 	host="localhost",
 	user="root",
 	password="admin",
-	database="cuveio"
+	database="mysql"
 )
 
 cursor = conn.cursor()
@@ -61,10 +61,10 @@ Ref: plants.id < plant_managment.plant_id
 
 def init(fullReload: bool):
 	if fullReload:
-		doCommand("DROP TABLE IF EXISTS fields")
-		doCommand("DROP TABLE IF EXISTS plants")
-		doCommand("DROP TABLE IF EXISTS users")
-		doCommand("DROP TABLE IF EXISTS plant_managment")
+		doCommand("DROP DATABASE IF EXISTS cuveio")
+
+		doCommand("CREATE DATABASE cuveio")
+		doCommand("USE cuveio")
 		doCommand(
 			"CREATE TABLE IF NOT EXISTS fields (id INTEGER PRIMARY KEY AUTO_INCREMENT, current_plant INTEGER, saved_prog INTEGER, saved_number INTEGER, linked_pump INTEGER)")
 		doCommand(
