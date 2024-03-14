@@ -200,6 +200,7 @@ def main():
 				continue
 			show(f"Bonjour {user.username}")
 			sleep(2)
+			state = 0
 		elif state == 0:
 			field = selectField()
 			if field is None:
