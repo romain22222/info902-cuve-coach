@@ -145,6 +145,7 @@ class Field:
 
 	def save(self):
 		doCommand(f"UPDATE fields SET current_plant = {self.current_plant.id if self.current_plant is not None else 'null'}, saved_prog = {self.saved_prog.value}, saved_number = {self.saved_number}, linked_pump = {self.linked_pump} WHERE id = {self.id if id is not None else 'null'}")
+		conn.commit()
 
 	@classmethod
 	def findByLinkedPump(cls, linked_pump: int) -> 'Field':
@@ -189,6 +190,7 @@ class PlantManagment:
 
 	def save(self):
 		doCommand(f"UPDATE plant_managment SET success_setup = {self.success_setup}, failed_setup = {self.failed_setup} WHERE user_id = {self.user.id} AND plant_id = {self.plant.id if id is not None else 'null'}")
+		conn.commit()
 
 
 init("reload" in sys.argv)
