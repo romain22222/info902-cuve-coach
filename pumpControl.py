@@ -5,16 +5,16 @@ import database
 from IoT_Cuve_controller_rpi.GPIO.core import Core
 
 
-def waterPlant(pumpNum):
+def waterPlant(pumpNum, c):
 	print("watering with pump", pumpNum)
 	# Turn on the pump for 10 seconds
-	core._relays[pumpNum].toggle()
+	c._relays[pumpNum].toggle()
 	sleep(1)  # Should be 10s
-	core._relays[pumpNum].toggle()
+	c._relays[pumpNum].toggle()
 	print("done watering with pump", pumpNum)
 
 
-def pumpControl(pumpNum):
+def pumpControl(pumpNum, c):
 	sleep((pumpNum+1) * .15)  # padding to avoid bdd access at the same time while still having a single connexion
 	while True:
 		# First check in the database if the linked field has anything planted, if not, sleep for 5 minutes
@@ -33,21 +33,21 @@ def pumpControl(pumpNum):
 			pass
 
 
-def main():
+def main(c: Core):
 	try:
 		pumps = []
 		for i in range(4):
 			# Create a thread for each pump
-			pumps.append(threading.Thread(target=pumpControl, args=(i,), daemon=True))
+			pumps.append(threading.Thread(target=pumpControl, args=(i,c), daemon=True))
 			pumps[-1].start()
 		# Wait for all threads to finish
 		for p in pumps:
 			p.join()
 	except KeyboardInterrupt:
-		core.quit()
+		c.quit()
 		exit(0)
 
 
 if __name__ == '__main__':
 	core = Core()
-	main()
+	main(core)
