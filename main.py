@@ -11,6 +11,7 @@ core = Core()
 
 
 def show(text: str):
+	text = text + " " * (16 - len(text))
 	core.setText(text)
 
 
@@ -97,7 +98,7 @@ def getConnectedProfile() -> tuple[int, str] or None:
 
 	# Color for USB key's connection : light blue
 	core.setColor(173, 216, 230)
-	core.setMenuText("Inserez la cle", 3)
+	core.setMenuText("Inserez la cle  ", 3)
 	while not core.getCancelButton().isPressed():
 		# Check if a USB key is connected
 		if keyConnected():
@@ -108,7 +109,7 @@ def getConnectedProfile() -> tuple[int, str] or None:
 				return [int(f[0]), f[1]]
 			else:
 				# Show a message to the user
-				show("Profil absent")
+				show("Profil absent   ")
 				return None
 	show("Annule")
 	return None
