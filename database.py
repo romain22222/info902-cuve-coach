@@ -137,7 +137,7 @@ class Field:
 	def __init__(self, field_id: int, current_plant: int, saved_prog: int, saved_number: int, linked_pump: int):
 		self.id: int = field_id
 		self.current_plant: Plant = Plant.findById(current_plant)
-		self.saved_prog: Program = Program(saved_prog) if saved_prog is not None else None
+		self.saved_prog: Program = Program(saved_prog-1) if saved_prog is not None else None
 		self.saved_number: int = saved_number
 		self.linked_pump: int = linked_pump
 
