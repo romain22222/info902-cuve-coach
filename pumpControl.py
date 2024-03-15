@@ -15,7 +15,7 @@ def waterPlant(pumpNum):
 
 
 def pumpControl(pumpNum):
-	sleep(pumpNum * .1)  # padding to avoid bdd access at the same time while still having a single connexion
+	sleep((pumpNum+1) * .15)  # padding to avoid bdd access at the same time while still having a single connexion
 	while True:
 		# First check in the database if the linked field has anything planted, if not, sleep for 5 minutes
 		# If it does, check the saved program and saved number, and water the plant accordingly
