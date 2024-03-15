@@ -4,6 +4,7 @@ from time import sleep
 import database
 from IoT_Cuve_controller_rpi.GPIO.core import Core
 
+
 def waterPlant(pumpNum):
 	print("watering with pump", pumpNum)
 	# Turn on the pump for 10 seconds
@@ -14,12 +15,13 @@ def waterPlant(pumpNum):
 
 
 def pumpControl(pumpNum):
-	sleep(pumpNum*.2)  # padding to avoid bdd access at the same time while still having a single connexion
+	sleep(pumpNum * .2)  # padding to avoid bdd access at the same time while still having a single connexion
 	while True:
 		# First check in the database if the linked field has anything planted, if not, sleep for 5 minutes
 		# If it does, check the saved program and saved number, and water the plant accordingly
 		field = database.Field.findByLinkedPump(pumpNum)
-		print("Pump", pumpNum, "field", field.id, field.current_plant, field.current_plant.name if field.current_plant is not None else None)
+		print("Pump", pumpNum, "field", field.id, field.current_plant,
+			  field.current_plant.name if field.current_plant is not None else None)
 		if field.current_plant is None:
 			sleep(5)  # Should be 5 minutes
 			continue

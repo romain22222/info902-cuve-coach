@@ -6,6 +6,7 @@ from time import sleep
 import database
 from IoT_Cuve_controller_rpi.GPIO.core import Core
 import pumpControl
+from threading import Thread
 
 
 core = Core()
