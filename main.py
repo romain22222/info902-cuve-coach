@@ -5,6 +5,7 @@ from time import sleep
 
 import database
 from IoT_Cuve_controller_rpi.GPIO.core import Core
+import pumpControl
 
 
 core = Core()
@@ -261,6 +262,8 @@ if __name__ == '__main__':
 	if "test" in sys.argv:
 		keyConnected = lambda: True
 		getFile = lambda: ("1", "0683207903f1832a87e488645fe0761354701afd028a2d7fadb8131bb8f96a67")
-	main()
-	if "test" not in sys.argv:
-		core.quit()
+	Thread(target=main).start()
+	Thread(target=pumpControl.main).start()
+
+	# if "test" not in sys.argv:
+	# 	core.quit()

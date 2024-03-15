@@ -4,9 +4,6 @@ from time import sleep
 import database
 from IoT_Cuve_controller_rpi.GPIO.core import Core
 
-core = Core()
-
-
 def waterPlant(pumpNum):
 	print("watering with pump", pumpNum)
 	# Turn on the pump for 10 seconds
@@ -50,4 +47,5 @@ def main():
 
 
 if __name__ == '__main__':
+	core = Core()
 	main()
