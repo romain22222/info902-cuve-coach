@@ -11,6 +11,13 @@ conn = mysql.connector.connect(
 	database="mysql"
 )
 
+# conn = mysql.connector.connect(
+# 	host="localhost",
+# 	user="root",
+# 	password="admin",
+# 	database="mysql"
+# )
+
 cursor = conn.cursor()
 
 
@@ -83,6 +90,7 @@ def init(fullReload: bool):
 		doCommand("INSERT INTO plants (name, min_time_aim, max_time_aim, min_humidity, max_humidity) VALUES ('Rose', 8, 12, 40, 50)")
 		doCommand("INSERT INTO plants (name, min_time_aim, max_time_aim, min_humidity, max_humidity) VALUES ('Sunflower', 12, 16, 20, 30)")
 		# Create 4 empty fields
+		# doCommand("INSERT INTO fields (current_plant, saved_prog, saved_number, linked_pump) VALUES (1, 1, 6, 0)")
 		doCommand("INSERT INTO fields (current_plant, saved_prog, saved_number, linked_pump) VALUES (NULL, NULL, NULL, 0)")
 		doCommand("INSERT INTO fields (current_plant, saved_prog, saved_number, linked_pump) VALUES (NULL, NULL, NULL, 1)")
 		doCommand("INSERT INTO fields (current_plant, saved_prog, saved_number, linked_pump) VALUES (NULL, NULL, NULL, 2)")
@@ -116,7 +124,7 @@ class Plant:
 
 	@classmethod
 	def findById(cls, plant_id: int) -> 'Plant':
-		values = doCommand(f"SELECT * FROM plants WHERE id = {plant_id if plant_id is not None else 'null'}")
+		values = doCommand(f"SELECT * FROM plants WHERE id = {plant_id if plant_id is not None else 'NULL'}")
 		return cls(*values[0]) if len(values) > 0 else None
 
 	@classmethod
@@ -126,16 +134,16 @@ class Plant:
 
 
 class Field:
-	def __init__(self, field_id: int, current_plant: int, saved_prog: int, saved_number: Program, linked_pump: int):
+	def __init__(self, field_id: int, current_plant: int, saved_prog: int, saved_number: int, linked_pump: int):
 		self.id: int = field_id
 		self.current_plant: Plant = Plant.findById(current_plant)
-		self.saved_prog: Program = saved_prog
+		self.saved_prog: Program = Program(saved_prog) if saved_prog is not None else None
 		self.saved_number: int = saved_number
 		self.linked_pump: int = linked_pump
 
 	@classmethod
 	def findById(cls, field_id: int) -> 'Field':
-		values = doCommand(f"SELECT * FROM fields WHERE id = {field_id if field_id is not None else 'null'}")
+		values = doCommand(f"SELECT * FROM fields WHERE id = {field_id if field_id is not None else 'NULL'}")
 		return cls(*values[0]) if len(values) > 0 else None
 
 	@classmethod
@@ -144,13 +152,13 @@ class Field:
 		return [cls(*v) for v in values]
 
 	def save(self):
-		doCommand(f"UPDATE fields SET current_plant = {self.current_plant.id if self.current_plant is not None else 'null'}, saved_prog = {self.saved_prog.value}, saved_number = {self.saved_number}, linked_pump = {self.linked_pump} WHERE id = {self.id if id is not None else 'null'}")
+		doCommand(f"UPDATE fields SET current_plant = {self.current_plant.id if self.current_plant is not None else 'NULL'}, saved_prog = {1 if self.saved_prog.value == Program.HOUR else 2}, saved_number = {self.saved_number}, linked_pump = {self.linked_pump} WHERE id = {self.id if id is not None else 'NULL'}")
 		conn.commit()
 
 	@classmethod
 	def findByLinkedPump(cls, linked_pump: int) -> 'Field':
-		print(f"SELECT * FROM fields WHERE linked_pump = {linked_pump if linked_pump is not None else 'null'}")
-		values = doCommand(f"SELECT * FROM fields WHERE linked_pump = {linked_pump if linked_pump is not None else 'null'}")
+		print(f"SELECT * FROM fields WHERE linked_pump = {linked_pump if linked_pump is not None else 'NULL'}")
+		values = doCommand(f"SELECT * FROM fields WHERE linked_pump = {linked_pump if linked_pump is not None else 'NULL'}")
 		print(f"good for {linked_pump} : {values}")
 		return cls(*values[0]) if len(values) > 0 else None
 
@@ -163,7 +171,7 @@ class User:
 
 	@classmethod
 	def findById(cls, user_id: int) -> 'User':
-		values = doCommand(f"SELECT * FROM users WHERE id = {user_id if user_id is not None else 'null'}")
+		values = doCommand(f"SELECT * FROM users WHERE id = {user_id if user_id is not None else 'NULL'}")
 		return cls(*values[0]) if len(values) > 0 else None
 
 
@@ -176,12 +184,12 @@ class PlantManagment:
 
 	@classmethod
 	def findByUserAndPlant(cls, user_id: int, plant_id: int) -> 'PlantManagment':
-		values = doCommand(f"SELECT * FROM plant_managment WHERE user_id = {user_id} AND plant_id = {plant_id if plant_id is not None else 'null'}")
+		values = doCommand(f"SELECT * FROM plant_managment WHERE user_id = {user_id} AND plant_id = {plant_id if plant_id is not None else 'NULL'}")
 		return cls(*values[0]) if len(values) > 0 else None
 
 	@classmethod
 	def findPlantsOfUser(cls, user_id: int) -> List['PlantManagment']:
-		values = doCommand(f"SELECT * FROM plant_managment WHERE user_id = {user_id if user_id is not None else 'null'}")
+		values = doCommand(f"SELECT * FROM plant_managment WHERE user_id = {user_id if user_id is not None else 'NULL'}")
 		return [cls(*v) for v in values]
 
 	def getSetupRatio(self) -> float:
@@ -191,7 +199,7 @@ class PlantManagment:
 		return self.success_setup + self.failed_setup
 
 	def save(self):
-		doCommand(f"UPDATE plant_managment SET success_setup = {self.success_setup}, failed_setup = {self.failed_setup} WHERE user_id = {self.user.id} AND plant_id = {self.plant.id if id is not None else 'null'}")
+		doCommand(f"UPDATE plant_managment SET success_setup = {self.success_setup}, failed_setup = {self.failed_setup} WHERE user_id = {self.user.id} AND plant_id = {self.plant.id if id is not None else 'NULL'}")
 		conn.commit()
 
 
