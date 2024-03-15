@@ -102,6 +102,7 @@ def init(fullReload: bool):
 		for i in range(nbU):
 			for j in range(nbP):
 				doCommand(f"INSERT INTO plant_managment(user_id, plant_id, success_setup, failed_setup) VALUES ({i+1}, {j+1}, 0, 0)")
+		doCommand(f"UPDATE plant_managment SET success_setup = 9 WHERE user_id = 1 AND plant_id = 1")
 		conn.commit()
 	else:
 		doCommand("USE cuveio")
